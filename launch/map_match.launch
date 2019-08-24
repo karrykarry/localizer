@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="localizer" type="map_match" name="map_match" output="screen">	
+		<param name="map_file" value="/home/amsl/ros_catkin_ws/maps/d_kan_indoor.pcd" />
+		<param name="voxel_size" value="0.3" />
+
+	</node>
+</launch>
+
+
