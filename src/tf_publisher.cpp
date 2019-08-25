@@ -1,8 +1,5 @@
-#include <stdio.h>
 #include <iostream>
 #include <ros/ros.h>
-#include <geometry_msgs/Point.h>
-#include <geometry_msgs/Quaternion.h>
 #include <nav_msgs/Odometry.h>
 
 #include <Eigen/Core>
@@ -11,7 +8,6 @@
 
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
-#include <tf/transform_listener.h>
 #include <tf/transform_datatypes.h>
 
 class Tf_publisher{
@@ -36,8 +32,10 @@ Tf_publisher::Tf_publisher(ros::NodeHandle n, ros::NodeHandle private_nh_)
 {		
 	odom_sub = n.subscribe("/odom", 1, &Tf_publisher::odomCallback, this);
 
-	PARENT_FRAME = "/map";
-	CHILD_FRAME = "/matching_base_link";
+	n.param("PARENT_FRAME", PARENT_FRAME, {"/map"});
+	n.param("CHILD_FRAME", CHILD_FRAME, {"/matching_base_link"});
+	std::cout<<"PARENT_FRAME : "<<PARENT_FRAME<<std::endl;
+	std::cout<<"CHILD_FRAME : "<<CHILD_FRAME<<std::endl;
 	prepare();
 }
 

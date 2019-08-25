@@ -1,3 +1,16 @@
+/* NDT_Dgauss_ekf.cpp 
+ * 2016.10.05
+ * 
+ * author : Takashi Ienaga
+ * 
+ * Distribution : rwrc16のD-GaussとNDTの拡張カルマンフィルタ(EKF)
+ * 				  入力：Gyro-Odometry
+ * 				  観測：D-Gauss
+ * 					  	NDT
+ * を参考に
+ */
+
+
 //Library
 #include <ros/ros.h>
 #include <tf/tf.h>
@@ -14,8 +27,6 @@
 #include <nav_msgs/Odometry.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32.h>
-
-
 
 using namespace std;
 using namespace Eigen;
@@ -159,17 +170,18 @@ void odomCallback(nav_msgs::Odometry msg){
 
 void imuCallback(sensor_msgs::Imu::ConstPtr msg){
     u.coeffRef(1,0) = msg->angular_velocity.z;
-	ekf_odom.header.stamp = msg->header.stamp; //
 
 	ekf_odom.twist.twist.angular.z = u.coeffRef(1,0);
 	
 	pitch = 0;
 	imu_flag = true;
+	ekf_odom.header.stamp = msg->header.stamp; //
 
 }
 
 
 void ndtCallback(nav_msgs::Odometry msg){
+	// ekf_odom.header.stamp = msg.header.stamp; //
 	
     obs_ndt.coeffRef(0,0) = msg.pose.pose.position.x;
 	obs_ndt.coeffRef(1,0) = msg.pose.pose.position.y;
@@ -180,7 +192,6 @@ void ndtCallback(nav_msgs::Odometry msg){
     ndt_flag = true; 
 }
 
-//others
 void hanteiCallback(const std_msgs::BoolConstPtr msg){
 	
 	if(msg->data){
@@ -242,6 +253,9 @@ void poseInit(nav_msgs::Odometry &msg){
 	msg.child_frame_id = "/matching_base_link";
 	msg.pose.pose.position.x = init_x[0];
 	msg.pose.pose.position.y = init_x[1];
+	msg.pose.pose.position.z = 0.0; 
+	msg.pose.pose.orientation.x = 0.0;
+	msg.pose.pose.orientation.y = 0.0;
 	msg.pose.pose.orientation.z = init_x[2];
 	msg.pose.pose.orientation.w = 0.0;
 	
@@ -277,19 +291,21 @@ void printParam(void){
 
 
 int main(int argc, char** argv){
-	ros::init(argc, argv, "sq_NDT_odo");
+	ros::init(argc, argv, "ekf");
 	ros::NodeHandle n;
 	ros::NodeHandle pnh("~");
+    ROS_INFO("\033[1;32m---->\033[0m EKF Started.");
 	
 	//Subscribe
-	ros::Subscriber odom_sub  = n.subscribe("/odom", 100, odomCallback);
-	ros::Subscriber imu_sub   = n.subscribe("/imu/data", 100, imuCallback);
-	ros::Subscriber ndt_sub   = n.subscribe("/sq_ndt_data", 100, ndtCallback);//ndtによる結果	
+	ros::Subscriber odom_sub  = n.subscribe("/odom", 10, odomCallback);
+	ros::Subscriber imu_sub   = n.subscribe("/imu/data", 10, imuCallback);
+	ros::Subscriber ndt_sub   = n.subscribe("/NDT/result", 10, ndtCallback);//ndtによる結果	
 	ros::Subscriber hantei_sub = n.subscribe("/not_matching", 1, hanteiCallback);
 	ros::Subscriber init_sub    = n.subscribe("/move_base_simple/goal", 1, initposeCallback);
     
     //Publish
-	ros::Publisher ekf_pub = n.advertise<nav_msgs::Odometry>("/ekf_NDT", 100);
+	ros::Publisher ekf_pub = n.advertise<nav_msgs::Odometry>("/EKF/result", 100);
+	ros::Publisher vis_ekf_pub = n.advertise<nav_msgs::Odometry>("/vis/odometry", 100);
 
 	float dt;
 	struct timeval last_time, now_time;
@@ -314,6 +330,7 @@ int main(int argc, char** argv){
 	//初期化
 	poseInit(ekf_odom);
 	static bool init_flag = true;
+	nav_msgs::Odometry vis_ekf;
 	
 	//時刻取得
 	gettimeofday(&last_time, NULL);
@@ -347,8 +364,13 @@ int main(int argc, char** argv){
 			ekf_odom.pose.pose.position.y = x.coeffRef(1,0);
 			ekf_odom.pose.pose.orientation.z = x.coeffRef(2,0);
 			ekf_odom.pose.pose.orientation.w = 0.0;
-			ekf_odom.header.stamp = ros::Time::now(); //
+			// ekf_odom.header.stamp = ros::Time::now(); //
 			ekf_pub.publish(ekf_odom);
+
+			vis_ekf = ekf_odom;
+			vis_ekf.pose.pose.orientation.z = sin(x.coeffRef(2,0) * 0.5);
+			vis_ekf.pose.pose.orientation.w = cos(x.coeffRef(2,0) * 0.5);
+			vis_ekf_pub.publish(vis_ekf);
 		}
 
 		loop.sleep();

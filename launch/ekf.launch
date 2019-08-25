@@ -2,9 +2,6 @@
 <launch>
     <node pkg="localizer" type="ekf" name="ekf" output="screen">
         <rosparam file="$(find localizer)/config/ekf_sigs.yaml" />
-		<param name="init_x" value="0.0" />
-		<param name="init_y" value="0.0" />
-		<param name="init_yaw" value="0.0" />
 		
 		<!-- <remap from="/imu/data" to="/imu/data/calibrated" /> -->
 		<!-- <remap from="/odom" to="/tinypower/odom" /> -->

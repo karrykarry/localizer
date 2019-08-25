@@ -1,7 +1,4 @@
 //========================================================
-//0808~
-//FogOdometry proto
-//
 //2016.10.01 家永編 
 //	行列計算のみにして，predictionとmeasurement updateは
 //	このライブラリをincludeするソースで作成すること．
@@ -20,7 +17,6 @@
 #include <math.h>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_datatypes.h>
-//#include <Eigen/Core> 
 #include <Eigen/LU>
 #include "EKF.h"
 

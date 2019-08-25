@@ -13,18 +13,18 @@ int main(int argc, char* argv[])
     ros::init(argc, argv, "map_match");
 	ros::NodeHandle n;
 	ros::NodeHandle priv_nh("~");
-	ros::Rate loop(10);
+	ros::Rate loop(5);
 
     ROS_INFO("\033[1;32m---->\033[0m map_match Started.");
 	
 	Matcher matcher(n,priv_nh);	
 
-	string map_file;
-	priv_nh.getParam("map_file",map_file);
+	std::string map_file;
+	// priv_nh.getParam("map_file",map_file);
+	
+	map_file = argv[1];
 	matcher.map_read(map_file);
 	
-	
-	// ros::spin();
 	while(ros::ok()){
 	
 		if(matcher.is_start) matcher.process();
