@@ -1,3 +1,11 @@
+/* drift_imu.cpp
+ *
+ * 2019.08.25
+ *
+ * author : R.Kusakari
+ *
+*/ 
+
 #include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
 #include <std_msgs/Bool.h>

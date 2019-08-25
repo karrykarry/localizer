@@ -4,7 +4,7 @@ source /opt/ros/kinetic/setup.bash
 source /home/amsl/ros_catkin_ws/devel/setup.bash
 
 gnome-terminal -e "/opt/ros/kinetic/bin/roscore" --geometry=50x12+0+0 &
-sleep 0.5s
+sleep 3.0s
 
 gnome-terminal -e "/opt/ros/kinetic/bin/rosparam set use_sim_time true" --geometry=50x12+0+50 &
 sleep 0.5s
