@@ -13,7 +13,7 @@
 ## How to use
 - [download](https://drive.google.com/file/d/1BaPeG6ogi5xXnTieIbWilvUuJZT4bIzt/view?usp=sharing)
 - give initial robot's position as below:
-<p align="center"><img src="example_data/init_pose.gif" width=400></p>
+<p align="center"><img src="example_data/init_pose.gif" width=600></p>
 
 - run 
 ```
