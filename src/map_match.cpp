@@ -105,6 +105,26 @@ Matcher::ndt_matching(
 	vg.setInputCloud(cloud_tgt);
 	vg.filter(*filtered_cloud_tgt);
 
+    //20190925 add /////////////////////////////////////////////////
+     double sum_src = 0.0;
+     double ave_src = 0.0;
+     for(size_t i = 0; i < filtered_cloud_src->points.size(); i++){
+         sum_src += filtered_cloud_src->points[i].z;
+     }   
+     ave_src = sum_src / filtered_cloud_src->points.size();
+ 
+     double sum_tgt = 0.0;
+     double ave_tgt = 0.0;
+     for(size_t i = 0; i < filtered_cloud_tgt->points.size(); i++){
+         sum_tgt += filtered_cloud_tgt->points[i].z;
+     }   
+     ave_tgt = sum_tgt / filtered_cloud_tgt->points.size();
+ 
+     for(size_t i = 0; i < filtered_cloud_tgt->points.size(); i++){
+         filtered_cloud_tgt->points[i].z -= (ave_tgt - ave_src);
+     }   
+     ////////////////////////////////////////////////////////////////
+
 	Eigen::AngleAxisf init_rotation (odo.pose.pose.orientation.z , Eigen::Vector3f::UnitZ ());
 	Eigen::Translation3f init_translation (odo.pose.pose.position.x, odo.pose.pose.position.y, odo.pose.pose.position.z);
 
