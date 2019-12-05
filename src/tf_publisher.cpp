@@ -65,7 +65,7 @@ Tf_publisher::prepare(){
 void
 Tf_publisher::tf_pub(const geometry_msgs::Pose &p,const ros::Time& current_time){
 
-	transform.setOrigin( tf::Vector3( p.position.x, p.position.y, 0.0) );
+	transform.setOrigin( tf::Vector3( p.position.x, p.position.y, p.position.z) );
 	tf::Quaternion q;
 	q.setRPY(0, 0, p.orientation.z);
 	// tf::quaternionMsgToTF(p.orientation, q);

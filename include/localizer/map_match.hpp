@@ -43,10 +43,13 @@ class Matcher{
 		sensor_msgs::PointCloud2 buffer_pc;
 		nav_msgs::Odometry buffer_odom;
 
+		template<typename T> T MIN_(T val_1, T val_2);
+
+
 		Eigen::Matrix4f ndt_matching(
 				pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_tgt, 
 				pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_src, 
-				pcl::PointCloud<pcl::PointXYZI>::Ptr &cloud, nav_msgs::Odometry odo);
+				pcl::PointCloud<pcl::PointXYZI>::Ptr &cloud, nav_msgs::Odometry &odo);
 
 
 		void local_pc(
@@ -56,6 +59,9 @@ class Matcher{
 		
 		
 		void calc_rpy(Eigen::Matrix4f ans, double &yaw);
+
+		static constexpr int grid_dim_ = 200;
+		static constexpr double m_per_cell_ = 0.2;
 	
 	public:
 		Matcher(ros::NodeHandle n,ros::NodeHandle priv_nh);
@@ -66,6 +72,12 @@ class Matcher{
 
 		bool is_start;
 };
+
+
+template<typename T>
+T Matcher::MIN_(T val_1, T val_2){
+	return val_1 < val_2 ? val_1 : val_2;
+}
 
 #endif
 

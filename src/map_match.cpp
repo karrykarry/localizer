@@ -93,7 +93,7 @@ Eigen::Matrix4f
 Matcher::ndt_matching(
 		pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_tgt, 
 		pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_src, 
-		pcl::PointCloud<pcl::PointXYZI>::Ptr &cloud, nav_msgs::Odometry odo){
+		pcl::PointCloud<pcl::PointXYZI>::Ptr &cloud, nav_msgs::Odometry &odo){
 
 	/*------ Voxel Grid ------*/
 	pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloud_src (new pcl::PointCloud<pcl::PointXYZI>);
@@ -106,25 +106,47 @@ Matcher::ndt_matching(
 	vg.filter(*filtered_cloud_tgt);
 
     //20190925 add /////////////////////////////////////////////////
-     double sum_src = 0.0;
-     double ave_src = 0.0;
-     for(size_t i = 0; i < filtered_cloud_src->points.size(); i++){
-         sum_src += filtered_cloud_src->points[i].z;
-     }   
-     ave_src = sum_src / filtered_cloud_src->points.size();
- 
-     double sum_tgt = 0.0;
-     double ave_tgt = 0.0;
-     for(size_t i = 0; i < filtered_cloud_tgt->points.size(); i++){
-         sum_tgt += filtered_cloud_tgt->points[i].z;
-     }   
-     ave_tgt = sum_tgt / filtered_cloud_tgt->points.size();
- 
-     for(size_t i = 0; i < filtered_cloud_tgt->points.size(); i++){
-         filtered_cloud_tgt->points[i].z -= (ave_tgt - ave_src);
-     }   
-     ////////////////////////////////////////////////////////////////
+     // double sum_src = 0.0;
+     // double ave_src = 0.0;
+     // for(size_t i = 0; i < filtered_cloud_src->points.size(); i++){
+     //     sum_src += filtered_cloud_src->points[i].z;
+     // }   
+     // ave_src = sum_src / filtered_cloud_src->points.size();
+     //
+     // double sum_tgt = 0.0;
+     // double ave_tgt = 0.0;
+     // for(size_t i = 0; i < filtered_cloud_tgt->points.size(); i++){
+     //     sum_tgt += filtered_cloud_tgt->points[i].z;
+     // }   
+     // ave_tgt = sum_tgt / filtered_cloud_tgt->points.size();
+	 //
+	std::vector<std::vector<double>> z_min(grid_dim_, std::vector<double>(grid_dim_, 0.0));
+	std::vector<std::vector<bool>> init(grid_dim_, std::vector<bool>(grid_dim_, false));
+	double z_ave=0.0;
+	int sum=0;
+	for(auto pt : filtered_cloud_tgt->points){
+		int x = ((grid_dim_/2)+(pt.x-odo.pose.pose.position.x)/m_per_cell_);
+		int y = ((grid_dim_/2)+(pt.y-odo.pose.pose.position.y)/m_per_cell_);
+		if (x >= 0 && x < grid_dim_ && y >= 0 && y < grid_dim_) {
+			if (!init[x][y]) {
+				z_min[x][y] = pt.z;
+				z_ave += z_min[x][y]; 
 
+				init[x][y] = true;
+				sum++;
+			} else {
+				z_ave -= z_min[x][y]; 
+				z_min[x][y] = MIN_(z_min[x][y], (double)pt.z);
+				z_ave += z_min[x][y]; 
+			}
+		}
+	}
+	z_ave /= sum;
+	std::cout<<z_ave<<std::endl;	
+
+
+     ////////////////////////////////////////////////////////////////
+	odo.pose.pose.position.z = z_ave;
 	Eigen::AngleAxisf init_rotation (odo.pose.pose.orientation.z , Eigen::Vector3f::UnitZ ());
 	Eigen::Translation3f init_translation (odo.pose.pose.position.x, odo.pose.pose.position.y, odo.pose.pose.position.z);
 
@@ -133,6 +155,7 @@ Matcher::ndt_matching(
 	ndt.setInputTarget(filtered_cloud_tgt);
 	ndt.setInputSource(filtered_cloud_src);
     ndt.align (*cloud, init_guess);
+	
 
 	return ndt.getFinalTransformation();
 }

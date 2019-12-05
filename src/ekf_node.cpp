@@ -55,7 +55,6 @@ float pitch;			// ピッチ角
 
 
 
-
 MatrixXf predict(MatrixXf x, MatrixXf u, float dt, double *s_input, float pitch){
 	/* u   : (v, w)の転置行列 v:並進速度, w:角速度
 	 * x   : (x, y, θ)の転置行列
@@ -185,6 +184,7 @@ void ndtCallback(nav_msgs::Odometry msg){
 	
     obs_ndt.coeffRef(0,0) = msg.pose.pose.position.x;
 	obs_ndt.coeffRef(1,0) = msg.pose.pose.position.y;
+	ekf_odom.pose.pose.position.z = msg.pose.pose.position.z;
 
 	float yaw_true = expand(msg.pose.pose.orientation.z);
 	obs_ndt.coeffRef(2,0) = yaw_true;
@@ -203,9 +203,12 @@ void hanteiCallback(const std_msgs::BoolConstPtr msg){
 
     else{
         //徐々に減らしている。
-		s_ndt[0] = s_ndt[0] * 0.5;
-		s_ndt[1] = s_ndt[1] * 0.5;
-		s_ndt[2] = s_ndt[2] * 0.5;
+		// s_ndt[0] = s_ndt[0] * 0.5;
+		// s_ndt[1] = s_ndt[1] * 0.5;
+		// s_ndt[2] = s_ndt[2] * 0.5;
+		s_ndt[0] = 0.001;
+		s_ndt[1] = 0.001;
+		s_ndt[2] = 0.001;
 
         if(s_ndt[0] < 0.001){
 		    s_ndt[0] = 0.001;

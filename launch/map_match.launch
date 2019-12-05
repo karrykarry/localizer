@@ -4,7 +4,8 @@
 	<param name="PARENT_FRAME" value="/map" />
 	<param name="CHILD_FRAME" value="/matching_base_link" />
 	
-	<node pkg="localizer" type="map_match" name="map_match" args="$(find localizer)/example_data/d_kan_indoor.pcd" output="screen">	
+	<!-- <node pkg="localizer" type="map_match" name="map_match" args="$(find localizer)/example_data/d_kan_indoor.pcd" output="screen">	 -->
+		<node pkg="localizer" type="map_match" name="map_match" args="/home/amsl/map/2019-09-25-imuok.pcd" output="screen">	
 
 		<!-- <rosparam file="$(find localizer)/config/map_file.yaml" /> -->
 
