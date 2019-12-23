@@ -4,6 +4,13 @@
  *
  * author : R.Kusakari
  *
+ * 変更点
+ * voxel_size:0.5
+ * use pt:velodyne_obstacles
+ * setTransformationEpsilon:0.001->0.01
+ * setStepSize:0.1->0.5
+ * LIMIT_RANGE:20.0->30.0
+ * height:align map_minimum_height
 */ 
 
 #include"map_match.hpp"
@@ -15,22 +22,22 @@ Matcher::Matcher(ros::NodeHandle n,ros::NodeHandle private_nh_) :
 	ndt_cloud(new pcl::PointCloud<pcl::PointXYZI>),
 	is_start(false)
 {
-	pc_pub = n.advertise<sensor_msgs::PointCloud2>("/vis/ndt", 10);
+	pc_pub = n.advertise<sensor_msgs::PointCloud2>("/vis/ndt", 1);
 	map_pub = n.advertise<sensor_msgs::PointCloud2>("/vis/map", 1, true);
-	odom_pub = n.advertise<nav_msgs::Odometry>("/NDT/result", 10);
+	odom_pub = n.advertise<nav_msgs::Odometry>("/NDT/result", 1);
 
 	pc_sub = n.subscribe("/velodyne_points", 1, &Matcher::lidarcallback, this);
 	odom_sub = n.subscribe("/EKF/result", 1, &Matcher::odomcallback, this);
 	
-	ndt.setTransformationEpsilon(0.001);
-	ndt.setStepSize(0.1);
+	ndt.setTransformationEpsilon(0.01);
+	ndt.setStepSize(0.5);
 	ndt.setResolution(1.0);//1.0 change 05/09
-	ndt.setMaximumIterations(35);
+	ndt.setMaximumIterations(100);
 
 	n.param("PARENT_FRAME", PARENT_FRAME, {"/map"});
 	n.param("CHILD_FRAME", CHILD_FRAME, {"/matching_base_link"});
-	private_nh_.param("VOXEL_SIZE",VOXEL_SIZE ,{0.3});
-	private_nh_.param("LIMIT_RANGE",LIMIT_RANGE, {20.0});
+	private_nh_.param("VOXEL_SIZE",VOXEL_SIZE ,{0.5});
+	private_nh_.param("LIMIT_RANGE",LIMIT_RANGE, {30.0});
 
 	std::cout<<"PARENT_FRAME : "<<PARENT_FRAME<<std::endl;
 	std::cout<<"CHILD_FRAME : "<<CHILD_FRAME<<std::endl;
@@ -52,7 +59,8 @@ Matcher::map_read(std::string filename){
 	else 
 		std::cout<<"\x1b[32m"<<"読み込んだファイル："<<filename<<"\x1b[m\r"<<std::endl;
 
-    pcl::ApproximateVoxelGrid<pcl::PointXYZI> approximate_voxel_filter;
+    // pcl::ApproximateVoxelGrid<pcl::PointXYZI> approximate_voxel_filter;
+    pcl::VoxelGrid<pcl::PointXYZI> approximate_voxel_filter;
     
 	approximate_voxel_filter.setLeafSize (VOXEL_SIZE, VOXEL_SIZE, VOXEL_SIZE);
 	approximate_voxel_filter.setInputCloud (low_map_cloud);
@@ -95,6 +103,9 @@ Matcher::ndt_matching(
 		pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_src, 
 		pcl::PointCloud<pcl::PointXYZI>::Ptr &cloud, nav_msgs::Odometry &odo){
 
+
+	clock_t t1, t2;
+
 	/*------ Voxel Grid ------*/
 	pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloud_src (new pcl::PointCloud<pcl::PointXYZI>);
 	pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloud_tgt (new pcl::PointCloud<pcl::PointXYZI>);
@@ -105,21 +116,31 @@ Matcher::ndt_matching(
 	vg.setInputCloud(cloud_tgt);
 	vg.filter(*filtered_cloud_tgt);
 
+
+
+	/*
     //20190925 add /////////////////////////////////////////////////
-     // double sum_src = 0.0;
-     // double ave_src = 0.0;
-     // for(size_t i = 0; i < filtered_cloud_src->points.size(); i++){
-     //     sum_src += filtered_cloud_src->points[i].z;
-     // }   
-     // ave_src = sum_src / filtered_cloud_src->points.size();
-     //
-     // double sum_tgt = 0.0;
-     // double ave_tgt = 0.0;
-     // for(size_t i = 0; i < filtered_cloud_tgt->points.size(); i++){
-     //     sum_tgt += filtered_cloud_tgt->points[i].z;
-     // }   
-     // ave_tgt = sum_tgt / filtered_cloud_tgt->points.size();
-	 //
+      double sum_src = 0.0;
+      double ave_src = 0.0;
+      for(size_t i = 0; i < filtered_cloud_src->points.size(); i++){
+          sum_src += filtered_cloud_src->points[i].z;
+      }   
+      ave_src = sum_src / filtered_cloud_src->points.size();
+     
+      double sum_tgt = 0.0;
+      double ave_tgt = 0.0;
+      for(size_t i = 0; i < filtered_cloud_tgt->points.size(); i++){
+          sum_tgt += filtered_cloud_tgt->points[i].z;
+      }   
+      ave_tgt = sum_tgt / filtered_cloud_tgt->points.size();
+	  
+	  for(size_t i = 0; i < filtered_cloud_tgt->points.size(); i++){
+		  filtered_cloud_tgt->points[i].z -= (ave_tgt - ave_src);
+	  }
+	  */
+
+	t1=clock();
+	
 	std::vector<std::vector<double>> z_min(grid_dim_, std::vector<double>(grid_dim_, 0.0));
 	std::vector<std::vector<bool>> init(grid_dim_, std::vector<bool>(grid_dim_, false));
 	double z_ave=0.0;
@@ -143,10 +164,16 @@ Matcher::ndt_matching(
 	}
 	z_ave /= sum;
 	std::cout<<z_ave<<std::endl;	
+	
+	t2=clock();
+	printf("z:処理時間：%f\n", (double)(t2-t1) / CLOCKS_PER_SEC);
 
 
-     ////////////////////////////////////////////////////////////////
-	odo.pose.pose.position.z = z_ave;
+
+	//odo.pose.pose.position.z = z_ave;
+     
+	////////////////////////////////////////////////////////////////
+	t1=clock();
 	Eigen::AngleAxisf init_rotation (odo.pose.pose.orientation.z , Eigen::Vector3f::UnitZ ());
 	Eigen::Translation3f init_translation (odo.pose.pose.position.x, odo.pose.pose.position.y, odo.pose.pose.position.z);
 
@@ -156,6 +183,9 @@ Matcher::ndt_matching(
 	ndt.setInputSource(filtered_cloud_src);
     ndt.align (*cloud, init_guess);
 	
+	t2=clock();
+	printf("ndt:処理時間：%f\n", (double)(t2-t1) / CLOCKS_PER_SEC);
+
 
 	return ndt.getFinalTransformation();
 }
@@ -219,6 +249,8 @@ Matcher::process(){
 	vis_pc.header.frame_id = PARENT_FRAME;
 
 	pc_pub.publish(vis_pc);
+
+	
 
 }
 

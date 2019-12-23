@@ -3,7 +3,7 @@
     <node pkg="localizer" type="ekf" name="ekf" output="screen">
         <rosparam file="$(find localizer)/config/ekf_sigs.yaml" />
 		
-		<remap from="/imu/data" to="/imu/data/calibrated" />
+		<!-- <remap from="/imu/data" to="/imu/data/calibrated" /> -->
 		<remap from="/odom" to="/tinypower/odom" />
 	</node>
 </launch>

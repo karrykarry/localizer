@@ -195,20 +195,20 @@ void ndtCallback(nav_msgs::Odometry msg){
 void hanteiCallback(const std_msgs::BoolConstPtr msg){
 	
 	if(msg->data){
-        s_ndt[0] = 100;
-		s_ndt[1] = 100;
-		s_ndt[2] = 100;
+        s_ndt[0] = 0.1;
+		s_ndt[1] = 0.1;
+		s_ndt[2] = 0.1;
     }
 
 
     else{
         //徐々に減らしている。
-		// s_ndt[0] = s_ndt[0] * 0.5;
-		// s_ndt[1] = s_ndt[1] * 0.5;
-		// s_ndt[2] = s_ndt[2] * 0.5;
-		s_ndt[0] = 0.001;
-		s_ndt[1] = 0.001;
-		s_ndt[2] = 0.001;
+		s_ndt[0] = s_ndt[0] * 0.5;
+		s_ndt[1] = s_ndt[1] * 0.5;
+		s_ndt[2] = s_ndt[2] * 0.5;
+		// s_ndt[0] = 0.001;
+		// s_ndt[1] = 0.001;
+		// s_ndt[2] = 0.001;
 
         if(s_ndt[0] < 0.001){
 		    s_ndt[0] = 0.001;
@@ -302,13 +302,13 @@ int main(int argc, char** argv){
 	//Subscribe
 	ros::Subscriber odom_sub  = n.subscribe("/odom", 10, odomCallback);
 	ros::Subscriber imu_sub   = n.subscribe("/imu/data", 10, imuCallback);
-	ros::Subscriber ndt_sub   = n.subscribe("/NDT/result", 10, ndtCallback);//ndtによる結果	
+	ros::Subscriber ndt_sub   = n.subscribe("/NDT/result", 1, ndtCallback);//ndtによる結果	
 	ros::Subscriber hantei_sub = n.subscribe("/not_matching", 1, hanteiCallback);
 	ros::Subscriber init_sub    = n.subscribe("/move_base_simple/goal", 1, initposeCallback);
     
     //Publish
-	ros::Publisher ekf_pub = n.advertise<nav_msgs::Odometry>("/EKF/result", 100);
-	ros::Publisher vis_ekf_pub = n.advertise<nav_msgs::Odometry>("/vis/odometry", 100);
+	ros::Publisher ekf_pub = n.advertise<nav_msgs::Odometry>("/EKF/result", 10);
+	ros::Publisher vis_ekf_pub = n.advertise<nav_msgs::Odometry>("/vis/odometry", 10);
 
 	float dt;
 	struct timeval last_time, now_time;

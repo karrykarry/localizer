@@ -19,6 +19,7 @@
 #include<pcl/point_cloud.h>
 	
 	
+#include<time.h>
 
 class Matcher{
 
@@ -60,8 +61,8 @@ class Matcher{
 		
 		void calc_rpy(Eigen::Matrix4f ans, double &yaw);
 
-		static constexpr int grid_dim_ = 200;
-		static constexpr double m_per_cell_ = 0.2;
+		static constexpr int grid_dim_ = 60;
+		static constexpr double m_per_cell_ = 1.0;
 	
 	public:
 		Matcher(ros::NodeHandle n,ros::NodeHandle priv_nh);

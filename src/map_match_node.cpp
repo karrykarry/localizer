@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
     ros::init(argc, argv, "map_match");
 	ros::NodeHandle n;
 	ros::NodeHandle priv_nh("~");
-	ros::Rate loop(5);
+	ros::Rate loop(10);
 
     ROS_INFO("\033[1;32m---->\033[0m map_match Started.");
 	
@@ -28,8 +28,8 @@ int main(int argc, char* argv[])
 	while(ros::ok()){
 	
 		if(matcher.is_start) matcher.process();
-		loop.sleep();
 		ros::spinOnce();
+		loop.sleep();
 	}
  
 	return 0;

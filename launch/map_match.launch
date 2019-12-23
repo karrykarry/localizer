@@ -5,12 +5,16 @@
 	<param name="CHILD_FRAME" value="/matching_base_link" />
 	
 	<!-- <node pkg="localizer" type="map_match" name="map_match" args="$(find localizer)/example_data/d_kan_indoor.pcd" output="screen">	 -->
-		<node pkg="localizer" type="map_match" name="map_match" args="/home/amsl/map/2019-09-25-imuok.pcd" output="screen">	
+		<!-- <node pkg="localizer" type="map_match" name="map_match" args="/home/amsl/map/2019&#45;09&#45;25&#45;imuok.pcd" output="screen">	 -->
+		<!-- <node pkg="localizer" type="map_match" name="map_match" args="/home/amsl/map/2018&#45;09&#45;26&#45;imuok.pcd" output="screen">	 -->
+		<!-- <node pkg="localizer" type="map_match" name="map_match" args="/home/amsl/map/2019&#45;09&#45;25&#45;imuok.pcd" output="screen">	 -->
+			<node pkg="localizer" type="map_match" name="map_match" args="/home/amsl/Desktop/tkb_sample.pcd" output="screen">	
 
 		<!-- <rosparam file="$(find localizer)/config/map_file.yaml" /> -->
 
 		<param name="VOXEL_SIZE" value="0.3" />
 		<param name="LIMIT_RANGE" value="20.0" />
+		<remap from="/velodyne_points" to="velodyne_obstacles" />
 	</node>
 </launch>
 
