@@ -3,17 +3,21 @@
 	
 	<param name="PARENT_FRAME" value="/map" />
 	<param name="CHILD_FRAME" value="/matching_base_link" />
-	
-	<!-- <node pkg="localizer" type="map_match" name="map_match" args="$(find localizer)/example_data/d_kan_indoor.pcd" output="screen">	 -->
-		<!-- <node pkg="localizer" type="map_match" name="map_match" args="/home/amsl/map/2019&#45;09&#45;25&#45;imuok.pcd" output="screen">	 -->
-		<!-- <node pkg="localizer" type="map_match" name="map_match" args="/home/amsl/map/2018&#45;09&#45;26&#45;imuok.pcd" output="screen">	 -->
-		<!-- <node pkg="localizer" type="map_match" name="map_match" args="/home/amsl/map/2019&#45;09&#45;25&#45;imuok.pcd" output="screen">	 -->
-			<node pkg="localizer" type="map_match" name="map_match" args="/home/amsl/Desktop/tkb_sample.pcd" output="screen">	
 
-		<!-- <rosparam file="$(find localizer)/config/map_file.yaml" /> -->
+	<node name="heightmap_node_ndt" pkg="velodyne_height_map" type="heightmap_node">
+		<param name="cell_size" value="0.2"/>
+		<param name="full_clouds" value="true"/>
+		<param name="grid_dimensions" value="500"/>
+		<param name="height_threshold" value="0.15"/>
+	</node>
+
+	<node pkg="localizer" type="map_match" name="map_match" args="$(find localizer)/example_data/d_kan_indoor.pcd" output="screen">	
+	<!-- <node pkg="localizer" type="map_match" name="map_match" output="screen">	 -->
+
+		<rosparam file="$(find localizer)/config/map_file.yaml" />
 
 		<param name="VOXEL_SIZE" value="0.3" />
-		<param name="LIMIT_RANGE" value="20.0" />
+		<param name="LIMIT_RANGE" value="50.0" />
 		<remap from="/velodyne_points" to="velodyne_obstacles" />
 	</node>
 </launch>

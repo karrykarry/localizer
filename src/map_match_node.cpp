@@ -20,9 +20,9 @@ int main(int argc, char* argv[])
 	Matcher matcher(n,priv_nh);	
 
 	std::string map_file;
-	// priv_nh.getParam("map_file",map_file);
+	priv_nh.getParam("map_file",map_file);
 	
-	map_file = argv[1];
+	// map_file = argv[1];
 	matcher.map_read(map_file);
 	
 	while(ros::ok()){

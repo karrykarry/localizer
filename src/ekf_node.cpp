@@ -195,9 +195,9 @@ void ndtCallback(nav_msgs::Odometry msg){
 void hanteiCallback(const std_msgs::BoolConstPtr msg){
 	
 	if(msg->data){
-        s_ndt[0] = 0.1;
-		s_ndt[1] = 0.1;
-		s_ndt[2] = 0.1;
+        s_ndt[0] = 100.0;
+		s_ndt[1] = 100.0;
+		s_ndt[2] = 100.0;
     }
 
 
@@ -241,7 +241,7 @@ void initposeCallback(const geometry_msgs::PoseStampedConstPtr& msg){
 		obs_ndt.coeffRef(1,0) = init_x[1];
 		obs_ndt.coeffRef(2,0) = init_x[2];
 
-		init_flag_ = false;
+		// init_flag_ = false;
 
 	}
 
@@ -312,6 +312,7 @@ int main(int argc, char** argv){
 
 	float dt;
 	struct timeval last_time, now_time;
+	// double last_time, now_time;
 	
 	//パラメータ
 	pnh.param<double>("/init_x", init_x[0], 0.0);
@@ -337,13 +338,16 @@ int main(int argc, char** argv){
 	
 	//時刻取得
 	gettimeofday(&last_time, NULL);
-	
+	// last_time  = ros::Time::now().toSec();
+
+
 	ros::Rate loop(50);
 	while(ros::ok()){
 		if(init_pose_flag){
 			if(imu_flag && odom_flag){
 				if(init_flag){
 					//時刻取得
+					// now_time  = ros::Time::now().toSec();
 					gettimeofday(&now_time, NULL);
 					dt = 0.02;
 					init_flag = false;
@@ -351,6 +355,8 @@ int main(int argc, char** argv){
 					//時刻取得
 					gettimeofday(&now_time, NULL);
 					dt = (now_time.tv_sec + now_time.tv_usec*1.0e-6) - (last_time.tv_sec + last_time.tv_usec*1.0e-6);
+					// now_time  = ros::Time::now().toSec();
+					// dt = now_time -last_time;
 				}
 				x = predict(x, u, dt, s_input, pitch);
 
